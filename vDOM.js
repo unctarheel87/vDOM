@@ -20,8 +20,29 @@ const jsx_2 = (
     ] } ] }
 );
 
+// helper functions
+
+function changed(node1, node2) {
+  return typeof node1 !== typeof node2 ||
+         typeof node1 === 'string' && node1 !== node2 ||
+         node1.type !== node2.type
+}
+
+function setProps($el, props) {
+  const set_Props = (value, key) => {
+    if(key === 'className') {
+      $el.setAttribute('class', value);
+    } else {
+      $el.setAttribute(key, value);
+    }
+  }
+  R.forEachObjIndexed(set_Props, props);
+}
+
 const toElement = node => createElement(node); 
 const append_Child = (el, node) => el.appendChild(node);
+
+// transform jS object to Node Tree
 
 function createElement(node) {
   if (typeof node === 'string') {
@@ -32,6 +53,8 @@ function createElement(node) {
   R.pipe(R.map(toElement), R.forEach(R.partial(append_Child, [$el])))(node.children);
   return $el;
 }
+
+// diffing algorithm to compare vDOM changes
 
 function updateElement($parent, newNode, oldNode, index = 0) {
   if(!oldNode) {
@@ -55,26 +78,6 @@ function updateElement($parent, newNode, oldNode, index = 0) {
       .forEach(R.partial(update_Element, [index]));
   }
 }
-
-// helper functions
-
-function changed(node1, node2) {
-  return typeof node1 !== typeof node2 ||
-         typeof node1 === 'string' && node1 !== node2 ||
-         node1.type !== node2.type
-}
-
-function setProps($el, props) {
-  const set_Props = (value, key) => {
-    if(key === 'className') {
-      $el.setAttribute('class', value);
-    } else {
-      $el.setAttribute(key, value);
-    }
-  }
-  R.forEachObjIndexed(set_Props, props);
-}
-
 
 const $root = document.getElementById('root');
 $root.appendChild(createElement(jsx_1));
