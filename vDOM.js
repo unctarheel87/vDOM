@@ -125,7 +125,7 @@ function updateProp($target, name, newVal, oldVal) {
 }
 
 function updateProps($target, newProps, oldProps = {}) {
-  const props = Object.assign({}, newProps, oldProps);
+  const props = { ...newProps, ...oldProps }
   const update_Props = (value, key) => {
     updateProp($target, key, newProps[key], oldProps[key])
   }
