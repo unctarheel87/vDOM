@@ -3,7 +3,7 @@ const jsx_1 = (
   { type: 'div', props: { className: 'container' }, children: [
     { type: 'h1', props: {}, children: ['Hello'] },
     { type: 'h2', props: {onClick: () => console.log('hey I am and h2!')}, children: ['World!'] },
-    { type: 'ul', props: {}, children: [
+    { type: 'ul', props: { className: 'ul-class' }, children: [
       { type: 'li', props: {}, children: ['item 1'] },
       { type: 'li', props: {}, children: ['item 2'] }
     ] } ] }
@@ -16,7 +16,7 @@ const jsx_2 = (
     { type: 'h2', props: {}, children: ['World!'] },
     { type: 'ul', props: {}, children: [
       //{ type: 'li', props: {}, children: ['item 1'] },
-      { type: 'li', props: {}, children: ['I changed!'] } 
+      { type: 'li', props: { className: 'my-li' }, children: ['I changed!'] } 
     ] } ] }
 );
 
@@ -61,8 +61,10 @@ function updateElement($parent, newNode, oldNode, index = 0) {
     $parent.removeChild($parent.childNodes[index]);
   } else if(changed(newNode, oldNode)) {
     $parent.replaceChild(createElement(newNode), $parent.childNodes[index])
+    
     // continue checking
   } else if(newNode.type) {
+    updateProps($parent.childNodes[index], newNode.props, oldNode.props )
     const newLength = newNode.children.length;
     const oldLength = oldNode.children.length;
     const update_Element = (_index, node, i) => (
@@ -90,6 +92,16 @@ function setProps($el, props) {
   R.forEachObjIndexed(set_Props, props);
 }
 
+function removeProps($el, name, value) {
+  if(name === 'className') {
+    $el.removeAttribute('class');
+  } else if(isEventProp(name)) {
+    $el.removeEventListener(getEventName(name), value);
+  } else {
+    $el.removeAttribute(name);
+  }
+}
+
 // handle events
 
 function addEventListeners($target, props) {
@@ -100,6 +112,24 @@ function addEventListeners($target, props) {
     }
   }
   R.forEachObjIndexed(add_EventListeners, props);
+}
+
+// diffing props
+
+function updateProp($target, name, newVal, oldVal) {
+  if(!newVal) {
+    removeProps($target, name, oldVal)
+  } else if(!oldVal || newVal !== oldVal) {
+    setProps($target, { [name]: newVal })
+  }
+}
+
+function updateProps($target, newProps, oldProps = {}) {
+  const props = Object.assign({}, newProps, oldProps);
+  const update_Props = (value, key) => {
+    updateProp($target, key, newProps[key], oldProps[key])
+  }
+  R.forEachObjIndexed(update_Props, props);
 }
 
 const $root = document.getElementById('root');
